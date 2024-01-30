@@ -1,5 +1,7 @@
 package ru.shcherbanev.itis.passwordstorage.storage;
 
+import ru.shcherbanev.itis.passwordstorage.models.User;
+
 import java.io.*;
 import java.util.ArrayList;
 
@@ -9,8 +11,7 @@ public class FileStorage extends AbstractStorage {
 
     public FileStorage(String path) {
         this.path = path;
-        logins = new ArrayList<>();
-        passwords = new ArrayList<>();
+        users = new ArrayList<>();
     }
 
 
@@ -23,8 +24,8 @@ public class FileStorage extends AbstractStorage {
                 if (parts.length >= 2) {
                     String login = parts[0];
                     String password = parts[1];
-                    logins.add(login);
-                    passwords.add(password);
+                    User user = new User(login, password);
+                    users.add(user);
                 }
             }
         } catch (IOException e) {
@@ -35,12 +36,28 @@ public class FileStorage extends AbstractStorage {
     @Override
     public void saveData() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
-            for (int i = 0; i < logins.size(); i++) {
-                writer.write(logins.get(i) + " " + passwords.get(i));
+            for (User user : users) {
+                writer.write(user.getUsername() + " " + user.getPassword());
                 writer.newLine();
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    @Override
+    public boolean userExists(String login) {
+        for (User user : users) {
+            if (user.getUsername().equals(login)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void addUser(String login, String password) {
+        User newUser = new User(login, password);
+        users.add(newUser);
     }
 }
